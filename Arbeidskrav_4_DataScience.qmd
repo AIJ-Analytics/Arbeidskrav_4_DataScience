@@ -189,7 +189,6 @@ gdp |>
 1\.
 Søk i toc_txt for tabeller med population og NUTS 3.
 Pass på at dere dekker både population og Population og ulike skrivemåter for NUTS 3.
-
 Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate
 regional GDP data (thousand persons) by NUTS 3 regions».
 
@@ -200,7 +199,6 @@ toc_txt |>
     str_detect(title, regex("NUTS\\s*3", ignore_case = TRUE))
   )
 ```
-
 
 ### Oppgave 2
 
