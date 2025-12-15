@@ -167,4 +167,39 @@ gdp |>
 
 ## Population demo_r_pjanaggr3
 
-### Oppgave
+### Oppgave 1
+
+1\.
+Søk i toc_txt for tabeller med population og NUTS 3.
+Pass på at dere dekker både population
+og Population og ulike skrivemåter for NUTS 3.
+
+Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate
+regional GDP data (thousand persons) by NUTS 3 regions».
+
+Oppgave2
+
+i\.
+Finn koden for tabellen med forklarende tekst «Average annual population to calculate
+regional GDP data (thousand persons) by NUTS 3 regions».
+
+ii.
+Last ned Data Structure Definition (DSD) for denne tabellen.
+
+iii.
+Bruk opplysningene i DSD for å formulere en spørring mot Eurostat og last ned dataene.
+Gi dataene lastet ned navnet pop.
+Vi er bare interessert i totalbefolkning og ignorerer
+derfor både kjønn og alder.
+Vi ønsker data for årene 2000-2023.
+
+iv.
+Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner.
+Vi
+vil gjøre vår egen aggregering.
+
+v. Hent data for samtlige land, dvs.
+vi trenger ikke sette noe filter for geo.
+Husk å konverter
+til tibble vha.
+as_tibble().
