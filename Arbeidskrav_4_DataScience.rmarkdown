@@ -19,7 +19,11 @@ library(broom)
 library(sandwich)
 ```
 
+
+
 ## Toc. eurostat
+
+
 
 ```{r}
 # xml skal ha mer detaljert info
@@ -29,7 +33,11 @@ toc_txt <- get_eurostat_toc(mode = "txt")
 
 ```
 
+
+
 ## GDP NUTS 3
+
+
 
 ```{r}
 gdp_tabs <- toc_txt |>
@@ -59,7 +67,11 @@ gdp_tabs |>
  width(2, width = 1.5)
 ```
 
+
+
 ### Laster så ned «Data Structure Definition (DSD)» for tabellen med kode nama_10r_3gdp.
+
+
 
 ```{r}
 # description nama_10r_3gdp
@@ -85,7 +97,11 @@ dsd_gdp |>
  width(j = 3, width = 2)
 ```
 
+
+
 Utfra kodene i dsd_gdpkan vi da formulere følgende spørring mot Eurostat:
+
+
 
 ```{r}
 #| eval: true
@@ -125,9 +141,12 @@ dim(gdp)
 gdp
 ```
 
-Vi har et lite problem for sonen IE053.
-Her mangler vi gdp data for årene 2015, 2016 og 2017.
+
+
+
+Vi har et lite problem for sonen IE053. Her mangler vi gdp data for årene 2015, 2016 og 2017.
 Dette vil gi oss problemer senere hvis vi ikke fikser det.
+
 
 ```{r}
 gdp |>
@@ -136,8 +155,11 @@ gdp |>
  print
 ```
 
-Vi legger derfor disse til gdp som NA verdier.
-Disse vil vi så erstatte med interpolerte verdier senere.
+
+Vi legger derfor disse til gdp som NA verdier. Disse vil vi så erstatte med interpolerte verdier
+senere.
+
+
 
 ```{r}
 ie_data <- tibble(
@@ -165,6 +187,8 @@ gdp |>
  print(n = 25)
 ```
 
-## Population demo_r_pjanaggr3
 
-### Oppgave
+
+Population demo_r_pjanaggr3
+Oppgave
+
