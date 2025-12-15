@@ -287,7 +287,8 @@ pop <- get_eurostat_data(
 dim(pop)
 ```
 
-Oppgave 3 Gjør en left_join() av de to tabellene.
+### Oppgave 3 
+Gjør en left_join() av de to tabellene.
 La gdp være venstre tabell (Viktig!).
 Gi resultatet navnet gdp_pop.
 
@@ -344,3 +345,21 @@ c(
   sum(is.na(eu_data$pop_n3))
 )
 ```
+
+### Oppgave 4
+Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for
+«Country») fra variabelen n3. Funksjonen str_sub() fra stringr pakken kan her være
+hendig å bruke.
+
+```{r}
+eu_data <- eu_data |>
+  rename(
+    n3 = geo
+  ) |>
+  mutate(
+    n2 = str_sub(n3, 1, 4), #Adding column for NUTS2
+    n1 = str_sub(n3, 1, 3), #NUTS1
+    nc = str_sub(n3, 1, 2) # And finally country.
+  )
+```
+
