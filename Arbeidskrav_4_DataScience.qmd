@@ -19,12 +19,30 @@ library(broom)
 library(sandwich)
 ```
 
+Oppgaven handler om å hente regionale tall fra Eurostat direkte inn i R ved hjelp av et API.
+Daten brukes til å analysere økonomiske forskjeller mellom regioner i Europa.
+Arbeidskravet vil dermed ha:
+
+-   Henter data på laveste regionale nivå (NUTS3)
+
+-   Summerer (aggregerer) dataene oppover til NUTS2, NUTS1 og til slutt landnivå
+
+-   Ser på BNP, befolkning og BNP per innbygger
+
+-   Beregning av Gini-koeffisient for å måle ulikhet mellom regioner
+
+    -   Innen hvert land (Mellom regioner)
+
+    -   Samlet for EU + utvalgte søkerland
+
+-   Dataene dekker perioden 2000 - 2023
+
+-   Bruker tidyverse og list-columns for å organisere dataene ryddig, slik at hver rad kan inneholde egne datasett (nested tibbles).
+
 ## Toc. eurostat
 
 ```{r}
-# xml skal ha mer detaljert info
-# toc_xml <- get_eurostat_toc()
-# tekstversjonen har trolig nok info for vårt formål
+# Her henter vi innholdsfortegnelsen fra Eurostat og legger det inn i en dataframe vi kaller "toc_txt"
 toc_txt <- get_eurostat_toc(mode = "txt")
 
 ```
@@ -170,11 +188,11 @@ gdp |>
 
 1\.
 Søk i toc_txt for tabeller med population og NUTS 3.
-Pass på at dere dekker både population
-og Population og ulike skrivemåter for NUTS 3.
+Pass på at dere dekker både population og Population og ulike skrivemåter for NUTS 3.
 
 Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate
 regional GDP data (thousand persons) by NUTS 3 regions».
+
 ```{r}
 toc_txt |>
   filter(
@@ -187,26 +205,19 @@ toc_txt |>
 ### Oppgave 2
 
 i\.
-Finn koden for tabellen med forklarende tekst «Average annual population to calculate
-regional GDP data (thousand persons) by NUTS 3 regions».
+Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
 
-ii.
-Last ned Data Structure Definition (DSD) for denne tabellen.
+ii. Last ned Data Structure Definition (DSD) for denne tabellen.
 
-iii.
-Bruk opplysningene i DSD for å formulere en spørring mot Eurostat og last ned dataene.
-Gi dataene lastet ned navnet pop.
-Vi er bare interessert i totalbefolkning og ignorerer
-derfor både kjønn og alder.
-Vi ønsker data for årene 2000-2023.
+iii. Bruk opplysningene i DSD for å formulere en spørring mot Eurostat og last ned dataene.
+     Gi dataene lastet ned navnet pop.
+     Vi er bare interessert i totalbefolkning og ignorerer derfor både kjønn og alder.
+     Vi ønsker data for årene 2000-2023.
 
-iv.
-Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner.
-Vi
-vil gjøre vår egen aggregering.
+iv. Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner.
+    Vi vil gjøre vår egen aggregering.
 
-v. Hent data for samtlige land, dvs.
-vi trenger ikke sette noe filter for geo.
-Husk å konverter
-til tibble vha.
-as_tibble().
+v.  Hent data for samtlige land, dvs.
+    vi trenger ikke sette noe filter for geo.
+    Husk å konverter til tibble vha.
+    as_tibble().
