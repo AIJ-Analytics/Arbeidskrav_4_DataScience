@@ -204,26 +204,62 @@ pop_tab <- toc_txt |>
 
 i\.
 Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+
+```{r}
+pop_tab |>
+  filter(
+    str_detect(title, regex("population", ignore_case = TRUE)) &
+    str_detect(title, regex("NUTS\\s*3", ignore_case = TRUE))
+  )
+
+```
+
 ```{r}
 pop_tab |>
   filter(
     str_detect(
       title,
-      fixed("Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions")
+      fixed("Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 region")
     )
   ) |>
-  select(title, code)
-
-pop_tab
+  select(code)
 ```
-
-
 ii. Last ned Data Structure Definition (DSD) for denne tabellen.
+```{r}
+# Så laster vi ned DSD for tabellen vi fant over.
+dsd_pop <- get_eurostat_dsd("nama_10r_3popgdp")
+```
 
 iii. Bruk opplysningene i DSD for å formulere en spørring mot Eurostat og last ned dataene.
      Gi dataene lastet ned navnet pop.
      Vi er bare interessert i totalbefolkning og ignorerer derfor både kjønn og alder.
      Vi ønsker data for årene 2000-2023.
+     
+```{r}
+#| eval: true
+#| cache: true
+pop <- get_eurostat_data(
+ id = "nama_10r_3popgdp",
+ filters = list(
+ nuts_level = "3",
+ unit = "THS"
+ ),
+ exact_match = FALSE,
+ date_filter = 2000:2023,
+ stringsAsFactors = FALSE
+ ) |>
+ mutate(
+ pop_n3 = values * 1000
+ ) |> 
+  select(-c(unit, values)) |>
+ filter(str_length(geo) == 5) |> 
+ as_tibble()
+```
+
+```{r}
+dim(pop)
+```
+
 
 iv. Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner.
     Vi vil gjøre vår egen aggregering.
