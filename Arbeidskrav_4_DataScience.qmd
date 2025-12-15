@@ -287,7 +287,8 @@ pop <- get_eurostat_data(
 dim(pop)
 ```
 
-### Oppgave 3 
+### Oppgave 3
+
 Gjør en left_join() av de to tabellene.
 La gdp være venstre tabell (Viktig!).
 Gi resultatet navnet gdp_pop.
@@ -347,9 +348,9 @@ c(
 ```
 
 ### Oppgave 4
-Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for
-«Country») fra variabelen n3. Funksjonen str_sub() fra stringr pakken kan her være
-hendig å bruke.
+
+Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for «Country») fra variabelen n3.
+Funksjonen str_sub() fra stringr pakken kan her være hendig å bruke.
 
 ```{r}
 eu_data <- eu_data |>
@@ -364,8 +365,10 @@ eu_data <- eu_data |>
 ```
 
 ### Oppgave 5
-Undersøk om vi har noen NUTS 3 soner med pop_n3 lik 0. Hvis det er noen så endre disse
-til NA.
+
+Undersøk om vi har noen NUTS 3 soner med pop_n3 lik 0.
+Hvis det er noen så endre disse til NA.
+
 ```{r}
 # Sjekker om det finnes soner uten befolkning. Så synes ikke, og livet går videre. 
 eu_data |>
@@ -373,7 +376,9 @@ eu_data |>
 ```
 
 ### Oppgave 6
+
 Sjekker hvor mange NUTS3 soner vi har i hvert land.
+
 ```{r}
 eu_data |>
   distinct(nc, n3)|>
@@ -382,16 +387,22 @@ eu_data |>
 ```
 
 ### Oppgave 7
-Sjekk summary gdp_pc_n3. Hva er største og minste verdi? Har vi noen NA?
+
+Sjekk summary gdp_pc_n3.
+Hva er største og minste verdi?
+Har vi noen NA?
 
 ```{r}
   summary(eu_data$gdp_pc_n3)
 ```
-Minsteverdi er 2 214, mens høyeste er 180 416. Ingen NA.
+
+Minsteverdi er 2 214, mens høyeste er 180 416.
+Ingen NA.
 
 ### Oppgave 8
-Bruker case_when() for å legge til variabelen nc_name før vi går videre. Østerrike for AT,
-Belgia for BE etc..
+
+Bruker case_when() for å legge til variabelen nc_name før vi går videre.
+Østerrike for AT, Belgia for BE etc..
 
 ```{r}
 eu_data <- eu_data |>
@@ -430,4 +441,3 @@ eu_data <- eu_data |>
     )
   )
 ```
-
