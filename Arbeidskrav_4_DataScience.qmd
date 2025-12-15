@@ -17,7 +17,6 @@ library(modelr)
 library(plm)
 library(broom)
 library(sandwich)
-
 ```
 
 ## Toc. eurostat
@@ -28,4 +27,91 @@ library(sandwich)
 # tekstversjonen har trolig nok info for vårt formål
 toc_txt <- get_eurostat_toc(mode = "txt")
 
+```
+
+## GDP NUTS 3
+
+```{r}
+gdp_tabs <- toc_txt |>
+# Regex AND external to regex
+ filter(
+ str_detect(
+ string = title,
+ # For å matche både små og store bokstaver
+ pattern = '[Gg][Dd][Pp]'
+ # AND vha. &
+ ) &
+ str_detect(
+ string = title,
+ # For å matche både små og store bokstaver og
+ # space eller ikke før 3
+ pattern = '[Nn][Uu][Tt][Ss]\\s*3'
+ )
+ ) |>
+ select(title, code)
+```
+
+```{r}
+gdp_tabs |>
+ select(title, code) |>
+ flextable() |>
+ width(1, width = 3.5) |>
+ width(2, width = 1.5)
+```
+
+### Laster så ned «Data Structure Definition (DSD)» for tabellen med kode nama_10r_3gdp.
+
+```{r}
+# description nama_10r_3gdp
+dsd_gdp <- get_eurostat_dsd("nama_10r_3gdp")
+```
+
+```{r}
+dsd_gdp |>
+ filter(concept %in% c('freq', 'unit')) |>
+ flextable() |>
+ width(j = 1, width = 1) |>
+ width(j = 2, width = 2) |>
+ width(j = 3, width = 2)
+```
+
+```{r}
+dsd_gdp |>
+ filter(concept %in% c('geo')) |>
+ head(n = 10) |>
+ flextable() |>
+ width(j = 1, width = 1) |>
+ width(j = 2, width = 2) |>
+ width(j = 3, width = 2)
+```
+
+Utfra kodene i dsd_gdpkan vi da formulere følgende spørring mot Eurostat:
+
+```{r}
+#| eval: true
+#| cache: true
+# Gross domestic product (GDP) at current market prices by NUTS 3 regions
+# id: nama_10r_3gdp
+# Vi velger å hente samtlige soner for så å filtrere ut de få vi ikke trenger
+gdp <- get_eurostat_data(
+ id = "nama_10r_3gdp",
+ filters = list(
+ # neste linje viser hvordan vi kunne ha hentet ut data
+ # for spesifiserte land
+ # geo = c("AT", "DE", "DK", "FR"),
+ nuts_level = "3",
+ unit = "MIO_PPS_EU27_2020"
+ ),
+ exact_match = FALSE,
+ date_filter = 2000:2023,
+ stringsAsFactors = FALSE
+ ) |>
+ mutate(
+ gdp_n3 = 1000000 * values
+ ) |> 
+  select(-c(unit, values)) |>
+ # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
+ # NUTS1 og NUTSc
+ filter(str_length(geo) == 5) |>
+ as_tibble
 ```
