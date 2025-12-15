@@ -442,6 +442,8 @@ eu_data <- eu_data |>
   )
 ```
 
+
+## Beregning av Gini
 ### Oppgave 9
 Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå. Finn også antall
 NUTS3 regioner som finnes i hver NUTS2 region. Gi denne variabelen navnet num_reg_n2.
@@ -512,3 +514,81 @@ gini_n1 |>
  print(width = 76)
 ```
 Ser lik ut som "fasit". Great success! High five.
+
+### Oppgave 12
+
+Beregn Gini-koeffisienter (ut fra variasjon i verdiskapning på NUTS3 nivå) på nasjonsnivå. Legg resultatet i gini_nc.
+
+```{r}
+gini_nc <- eu_data |>
+  group_by(nc, nc_name, time) |>
+  summarise(
+    gini_nc = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    pop_nc = sum(pop_n3, na.rm = TRUE),
+    gdp_nc = sum(gdp_n3, na.rm = TRUE),
+    gdp_pc_nc = gdp_nc / pop_nc,
+    num_reg_nc = n_distinct(n3),
+    .groups = "drop"
+  ) |>
+  as_tibble()
+```
+
+```{r}
+summary(gini_nc)
+```
+Denne ser også ut som løsningsforslaget.
+
+## Nestete Datastrukturer
+### Oppgave 13
+
+```{r}
+gini_n3_nest <- eu_data |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTS3_data") |>
+ ungroup()
+
+```
+
+### Oppgave 14
+
+Nest dataene på NUTS2 nivå. Legg resultatet gini_NUTS2_nest. Bruk .key =
+"NUTS2_data".
+
+```{r}
+gini_n2_nest <- gini_n2 |>
+  group_by(nc_name, nc)|>
+ nest(.key = "NUTS2_data")
+```
+
+
+
+### Oppgave 15
+«Nest» dataene på NUTS1 nivå. Legg resultatet gini_NUTS1_nest.
+
+```{r}
+gini_n1_nest <- gini_n1 |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTS1_data") |>
+ ungroup()
+```
+
+### Oppgave 16
+«Nest» dataene på nasjonsnivå. Legg resultatet i gini_NUTSc_nest.
+```{r}
+gini_NUTSc_nest <- gini_nc |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTSc_data") |>
+ ungroup()
+```
+
+### Oppgave 17
+
+```{r}
+ini_NUTSeu_nest <- eu_data |>
+ group_by(time) |>
+ summarise(
+ gini_eu = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+ num_reg_eu = n(),
+ .groups = "drop")
+```
+
