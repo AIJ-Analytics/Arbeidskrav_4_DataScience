@@ -446,6 +446,8 @@ eu_data <- eu_data |>
   )
 ```
 
+## Beregning av Gini
+
 ### Oppgave 9
 
 Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå.
@@ -529,3 +531,119 @@ gini_n1 |>
 Ser lik ut som "fasit".
 Great success!
 High five.
+
+### Oppgave 12
+
+Beregn Gini-koeffisienter (ut fra variasjon i verdiskapning på NUTS3 nivå) på nasjonsnivå.
+Legg resultatet i gini_nc.
+
+```{r}
+gini_nc <- eu_data |>
+  group_by(nc, nc_name, time) |>
+  summarise(
+    gini_nc = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    pop_nc = sum(pop_n3, na.rm = TRUE),
+    gdp_nc = sum(gdp_n3, na.rm = TRUE),
+    gdp_pc_nc = gdp_nc / pop_nc,
+    num_reg_nc = n_distinct(n3),
+    .groups = "drop"
+  ) |>
+  as_tibble()
+```
+
+```{r}
+summary(gini_nc)
+```
+
+Denne ser også ut som løsningsforslaget.
+
+## Nestete Datastrukturer
+
+### Oppgave 13
+
+```{r}
+gini_n3_nest <- eu_data |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTS3_data") |>
+ ungroup()
+
+```
+
+### Oppgave 14
+
+Nest dataene på NUTS2 nivå.
+Legg resultatet gini_NUTS2_nest.
+Bruk .key = "NUTS2_data".
+
+```{r}
+gini_n2_nest <- gini_n2 |>
+  group_by(nc_name, nc)|>
+ nest(.key = "NUTS2_data")
+```
+
+### Oppgave 15
+
+«Nest» dataene på NUTS1 nivå.
+Legg resultatet gini_NUTS1_nest.
+
+```{r}
+gini_n1_nest <- gini_n1 |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTS1_data") |>
+ ungroup()
+```
+
+### Oppgave 16
+
+«Nest» dataene på nasjonsnivå.
+Legg resultatet i gini_NUTSc_nest.
+
+```{r}
+gini_NUTSc_nest <- gini_nc |>
+ group_by(nc_name, nc) |>
+ nest(.key = "NUTSc_data") |>
+ ungroup()
+```
+
+### Oppgave 17
+
+```{r}
+gini_NUTSeu_nest <- eu_data |>
+ group_by(time) |>
+ summarise(
+ gini_eu = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+ num_reg_eu = n(),
+ .groups = "drop")
+```
+
+### Oppgave 18
+
+Vis utviklingen i Gini-koeffisienten for NUTS3 regioner i EU vha.
+et linjeplot.
+
+```{r}
+gini_NUTSeu_nest |>
+  ggplot(aes(x = as.numeric(time), y = gini_eu)) +
+  geom_line() +
+  labs(
+    x = "Year",
+    y = "gini_eu"
+  )
+```
+
+### Oppgave 19
+
+«The EU’s Structural Funds and Cohesion Fund direct funding to NUTS level 2 regions based on their GDP (PPS) per capita in comparison to the EU average: less developed regions (less than 75%), transition regions (between 75% and 90% and more developed regions (over 90%).
+For the period 2014–20, EUR 351 billion will be invested in the EU’s regions with most being directed to the less developed regions.» Basert på plottet fra foregående oppgave diskuter (veldig!) kort om tiltaket ser ut til å virke.
+
+Basert på plottet over ser det ut som den regionale ulikheten i GDP synker, i tråd med målsetningen til EU.
+Trenden er vedvarende over tid, men det er vanskelig å si at overføringene har hatt en kausal effekt.
+
+### Oppgave 20
+
+```{r}
+eu_data_nested <- gini_n3_nest |>
+  left_join(gini_n2_nest, by = c("nc", "nc_name")) |>
+  left_join(gini_n1_nest, by = c("nc", "nc_name")) |>
+  left_join(gini_NUTSc_nest, by = c("nc", "nc_name"))
+```
