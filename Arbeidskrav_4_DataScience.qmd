@@ -112,9 +112,8 @@ gdp <- get_eurostat_data(
   select(-c(unit, values)) |>
  # Vil bare ha NUTS 3 nivå (5 karakterer). Vil aggregere selv til NUTS2,
  # NUTS1 og NUTSc
- filter(str_length(geo) == 5)
-  
- as_tibble
+ filter(str_length(geo) == 5) |> 
+ as_tibble()
 ```
 
 ```{r}
@@ -177,7 +176,7 @@ og Population og ulike skrivemåter for NUTS 3.
 Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate
 regional GDP data (thousand persons) by NUTS 3 regions».
 
-Oppgave2
+### Oppgave 2
 
 i\.
 Finn koden for tabellen med forklarende tekst «Average annual population to calculate
