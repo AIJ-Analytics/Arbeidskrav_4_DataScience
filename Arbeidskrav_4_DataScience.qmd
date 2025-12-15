@@ -19,6 +19,10 @@ library(broom)
 library(sandwich)
 ```
 
+```{r}
+Sys.setlocale("LC_ALL", "Norwegian")
+```
+
 Oppgaven handler om å hente regionale tall fra Eurostat direkte inn i R ved hjelp av et API.
 Daten brukes til å analysere økonomiske forskjeller mellom regioner i Europa.
 Arbeidskravet vil dermed ha:
@@ -646,4 +650,26 @@ eu_data_nested <- gini_n3_nest |>
   left_join(gini_n2_nest, by = c("nc", "nc_name")) |>
   left_join(gini_n1_nest, by = c("nc", "nc_name")) |>
   left_join(gini_NUTSc_nest, by = c("nc", "nc_name"))
+```
+
+## Plots som viser utviklingen
+
+```{r}
+gini_nc |>
+  ggplot(
+    mapping = aes(
+      x = as.numeric(time),
+      y = gini_nc,
+      group = nc,
+      colour = nc_name
+    )
+  ) +
+  geom_line(lwd = 0.75) +
+  theme(legend.position = "bottom") +
+  ggtitle("Utviklingen i Gini-koeffisienten på nasjonsnivå (29 land)") +
+  labs(
+    x = "time",
+    y = "gini_nc",
+    colour = NULL
+  )
 ```
