@@ -175,6 +175,14 @@ og Population og ulike skrivemåter for NUTS 3.
 
 Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate
 regional GDP data (thousand persons) by NUTS 3 regions».
+```{r}
+toc_txt |>
+  filter(
+    str_detect(title, regex("population", ignore_case = TRUE)) &
+    str_detect(title, regex("NUTS\\s*3", ignore_case = TRUE))
+  )
+```
+
 
 ### Oppgave 2
 
