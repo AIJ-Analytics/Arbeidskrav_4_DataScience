@@ -381,3 +381,53 @@ eu_data |>
   as_flextable()
 ```
 
+### Oppgave 7
+Sjekk summary gdp_pc_n3. Hva er største og minste verdi? Har vi noen NA?
+
+```{r}
+  summary(eu_data$gdp_pc_n3)
+```
+Minsteverdi er 2 214, mens høyeste er 180 416. Ingen NA.
+
+### Oppgave 8
+Bruker case_when() for å legge til variabelen nc_name før vi går videre. Østerrike for AT,
+Belgia for BE etc..
+
+```{r}
+eu_data <- eu_data |>
+  mutate(
+    nc_name = case_when(
+      nc == "AL" ~ "Albania",
+      nc == "AT" ~ "Østerrike",
+      nc == "BE" ~ "Belgia",
+      nc == "BG" ~ "Bulgaria",
+      nc == "CY" ~ "Kypros",
+      nc == "CZ" ~ "Tjekkia",
+      nc == "DE" ~ "Tyskland",
+      nc == "DK" ~ "Danmark",
+      nc == "EE" ~ "Estland",
+      nc == "EL" ~ "Hellas",
+      nc == "ES" ~ "Spania",
+      nc == "FI" ~ "Finland",
+      nc == "FR" ~ "Frankrike",
+      nc == "HR" ~ "Kroatia",
+      nc == "HU" ~ "Ungarn",
+      nc == "IE" ~ "Irland",
+      nc == "IT" ~ "Italia",
+      nc == "LT" ~ "Litauen",
+      nc == "LU" ~ "Luxemburg",
+      nc == "LV" ~ "Latvia",
+      nc == "MK" ~ "Nord-Makedonia",
+      nc == "MT" ~ "Malta",
+      nc == "PL" ~ "Polen",
+      nc == "RO" ~ "Romania",
+      nc == "RS" ~ "Serbia",
+      nc == "SE" ~ "Sverige",
+      nc == "SI" ~ "Slovania",
+      nc == "SK" ~ "Slovakia",
+      nc == "TR" ~ "Tyrkia",
+      TRUE ~ NA_character_
+    )
+  )
+```
+
