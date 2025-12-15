@@ -445,3 +445,87 @@ eu_data <- eu_data |>
     )
   )
 ```
+
+### Oppgave 9
+
+Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå.
+Finn også antall NUTS3 regioner som finnes i hver NUTS2 region.
+Gi denne variabelen navnet num_reg_n2.
+Vi beregner også populasjon og gdp på NUTS2 nivå.
+Resultatet legger dere i en tibble kalt gini_n2.
+
+```{r}
+gini_n2 <- eu_data |>
+ group_by(n2, time, n1, nc, nc_name) |>
+ summarise(
+ gini_n2 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+ pop_n2 = sum(pop_n3),
+ gdp_n2 = sum(gdp_n3),
+ gdp_pc_n2 = gdp_n2 / pop_n2,
+ num_reg_n2 = n(),
+ .groups = "drop"
+ )|>
+  as_tibble()
+```
+
+```{r}
+head(gini_n2, 10)
+```
+
+```{r}
+summary(gini_n2)
+```
+
+### Oppgave 10
+
+Sjekk obs.
+med Gini mindre enn 0.001.
+Er det noe som kjennetegner disse regionene?
+
+For å løse denne gikk vi inn i R-objektet og filtrerte etter utregnet Gini.
+Når vi filtrerte etter Gini mellom 0 og 0,001 fikk vi 4 observasjoner:
+
+```{r}
+gini_n2 %>%
+  filter(gini_n2 < 0.001)
+```
+
+De er spredt geografisk, i tid og har forskjellig GDP.
+Det de derimot har til felles, er at alle inneholder 2 NUTS3-regioner.
+At de har få regioner å regne ulikhet fra påvirker resultatet.
+
+### Oppgave 11
+
+Beregn Gini-koeffisienter på NUTS1 nivå (ut fra gdp_pc_n3og pop_n3).
+Legg resultatet i gini_n1.
+Et alternativ her ville vært å beregnet Gini fra gdp_pc_n2 og pop_n2 i NUTS1 regionene.
+Vi får imidlertid større spredning og trolig også et bedre mål på likhet/ulikhet ved å beregne Gini utfra gdp_pc_n3og pop_n3.
+
+```{r}
+#Trur denne er rett?
+gini_n1 <- eu_data |>
+  group_by(n1, time, nc, nc_name) |>
+  summarise(
+    gini_n1 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    pop_n1 = sum(pop_n3, na.rm = TRUE),
+    gdp_n1 = sum(gdp_n3, na.rm = TRUE),
+    gdp_pc_n1 = gdp_n1 / pop_n1,
+    num_reg_n1 = n_distinct(n3),
+    .groups = "drop"
+  ) |>
+  as_tibble()
+```
+
+Vår summary:
+
+```{r}
+
+gini_n1 |>
+ select(gini_n1, num_reg_n1, gdp_n1, pop_n1, gdp_pc_n1) |>
+ summary() |>
+ print(width = 76)
+```
+
+Ser lik ut som "fasit".
+Great success!
+High five.
