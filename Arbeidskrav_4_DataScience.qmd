@@ -223,8 +223,6 @@ pop_tab <- toc_txt |>
 i\.
 Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
 
-<<<<<<< HEAD
-=======
 ```{r}
 pop_tab |>
   filter(
@@ -234,7 +232,6 @@ pop_tab |>
 
 ```
 
->>>>>>> Kristoffer
 ```{r}
 pop_tab |>
   filter(
@@ -288,4 +285,62 @@ pop <- get_eurostat_data(
 
 ```{r}
 dim(pop)
+```
+
+Oppgave 3 Gjør en left_join() av de to tabellene.
+La gdp være venstre tabell (Viktig!).
+Gi resultatet navnet gdp_pop.
+
+```{r}
+gdp_pop <- left_join(
+  gdp,
+  pop,
+  by = c("geo", "time")
+)
+```
+
+```{r}
+dim(gdp_pop)
+head(gdp_pop)
+```
+
+Gjør følgende tilpasning av gdp_pop og legger resultatet i variabelen eu_data.
+
+```{r}
+eu_data <- gdp_pop %>%
+ # Trenger ikke ZZ sonene som er en slag oppsamlingssone
+ # for ikke fordelte verdier
+ filter(!str_sub(geo, 3, 4) == "ZZ") |>
+ # Drop the EFTA countries Switzerland and Norway
+ filter(!str_sub(geo, 1, 2) %in% c("CH", "NO")) |>
+ # Drop the EU countries Netherlands and Portugal
+ filter(!str_sub(geo, 1, 2) %in% c("NL", "PT")) |>
+ # Drop candidate country Monte Negro because of data
+ filter(!str_sub(geo, 1, 2) %in% c("ME")) |>
+ # Drop a region of France in the Indian Ocean (Outre Mer); Mayotte
+ # because of missing data
+ filter(!geo == "FRY50") |>
+ # note that a few countries will have missing data for
+ # some years at the start of the period
+ filter(time > 1999 & time < 2023)
+```
+
+Regn ut gdp per capita og kaller variabelen gdp_pc_n3.
+
+```{r}
+eu_data <- eu_data |>
+  mutate(
+    gdp_pc_n3 = gdp_n3 / pop_n3
+  )
+```
+
+```{r}
+dim(eu_data)
+```
+
+```{r}
+c(
+  sum(is.na(eu_data$gdp_n3)),
+  sum(is.na(eu_data$pop_n3))
+)
 ```
