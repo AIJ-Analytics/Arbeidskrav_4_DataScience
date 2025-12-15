@@ -359,7 +359,25 @@ eu_data <- eu_data |>
   mutate(
     n2 = str_sub(n3, 1, 4), #Adding column for NUTS2
     n1 = str_sub(n3, 1, 3), #NUTS1
-    nc = str_sub(n3, 1, 2) # And finally country.
+    nc = str_sub(n3, 1, 2) # And finally country.s
   )
+```
+
+### Oppgave 5
+Undersøk om vi har noen NUTS 3 soner med pop_n3 lik 0. Hvis det er noen så endre disse
+til NA.
+```{r}
+# Sjekker om det finnes soner uten befolkning. Så synes ikke, og livet går videre. 
+eu_data |>
+  filter(pop_n3 == 0)
+```
+
+### Oppgave 6
+Sjekker hvor mange NUTS3 soner vi har i hvert land.
+```{r}
+eu_data |>
+  distinct(nc, n3)|>
+  count(nc, name ="antall_nuts3")|>
+  as_flextable()
 ```
 
