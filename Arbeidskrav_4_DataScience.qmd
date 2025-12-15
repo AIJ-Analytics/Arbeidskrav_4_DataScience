@@ -3,3 +3,29 @@ title: "Arbeidskrav_4_DataScience"
 format: html
 editor: visual
 ---
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(readxl)
+library(restatapi)
+library(DescTools)
+library(ggrepel)
+library(flextable)
+library(modelr)
+library(plm)
+library(broom)
+library(sandwich)
+
+```
+
+## Toc. eurostat
+
+```{r}
+# xml skal ha mer detaljert info
+# toc_xml <- get_eurostat_toc()
+# tekstversjonen har trolig nok info for vårt formål
+toc_txt <- get_eurostat_toc(mode = "txt")
+
+```
