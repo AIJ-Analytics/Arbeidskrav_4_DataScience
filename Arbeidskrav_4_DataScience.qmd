@@ -431,3 +431,31 @@ eu_data <- eu_data |>
   )
 ```
 
+### Oppgave 9
+Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå. Finn også antall
+NUTS3 regioner som finnes i hver NUTS2 region. Gi denne variabelen navnet num_reg_n2.
+Vi beregner også populasjon og gdp på NUTS2 nivå. Resultatet legger dere i en tibble kalt
+gini_n2.
+
+```{r}
+gini_n2 <- eu_data |>
+ group_by(n2, time, n1, nc, nc_name) |>
+ summarise(
+ gini_n2 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+ pop_n2 = sum(pop_n3),
+ gdp_n2 = sum(gdp_n3),
+ gdp_pc_n2 = gdp_n2 / pop_n2,
+ num_reg_n2 = n(),
+ .groups = "drop"
+ )|>
+  as_tibble()
+```
+
+```{r}
+head(gini_n2, 10)
+```
+
+```{r}
+summary(gini_n2)
+```
+
