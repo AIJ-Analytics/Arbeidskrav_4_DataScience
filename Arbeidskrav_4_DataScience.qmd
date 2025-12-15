@@ -41,6 +41,8 @@ Arbeidskravet vil dermed ha:
 
 ## Toc. eurostat
 
+Her velger vi å søke i tox_txt etter tabeller med BNP (GDP) på NUTS3-nivå ved hjelp av str_detect().
+
 ```{r}
 # xml skal ha mer detaljert info
 # toc_xml <- get_eurostat_toc()
@@ -50,6 +52,14 @@ toc_txt <- get_eurostat_toc(mode = "txt")
 ```
 
 ## GDP NUTS 3
+
+Her henter vi inholdsfortegnelsen fra Eurostat.
+Vi gjør dette ved å hente innholdsfortegnelsen i rent tekst format, der vi gir navnet toc_txt.
+Siden vi ikke vet helt om det brukes store eller småe bokstaver her, så bruker vi regex for å matche begge deler.
+Ved å bruke filter() velger vi tabeller som inneholder både "gdp" og "NUTS3", og med å bruke slect() ta vi kun med kollonene title og code.
+
+Tabellen vises med flextable(), som gjør at resultatene kan lett leses.
+For å sikre at begge ordene finnes i tittelen, bruker ci en AND-betingelse (&) mellom to str_detect() uttrykk.
 
 ```{r}
 gdp_tabs <- toc_txt |>
@@ -79,7 +89,12 @@ gdp_tabs |>
  width(2, width = 1.5)
 ```
 
-### Laster så ned «Data Structure Definition (DSD)» for tabellen med kode nama_10r_3gdp.
+Her bruker tabellen med koden nama_10r_3gdp, som inneholder BNP (GDP) på NUTS3-nivå.
+For å se hvilken variabler og verder som finnes i datasettet, henter ci "Data Structure Definition" (DSD).
+Denne informasjonen brukes til å sette riktige filters i spørringen mot Eurostat.
+Det er spesielt viktig å bruke nuts_leve = "3" for å fikre at vi henter data på NUTS3-nivå, siden dette ikke er åpenbart dokumentert.
+
+Vi Laster dermed ned «Data Structure Definition (DSD)» for tabellen med kode nama_10r_3gdp.
 
 ```{r}
 # description nama_10r_3gdp
@@ -144,6 +159,10 @@ dim(gdp)
 gdp
 ```
 
+Her har vi konvertert gdp til euro fra milioner euro.
+Vi vil og gi navnet gdp.
+Vi velger og å benytte MI0_PPS_EU27_2020 som mål på BNP.
+
 Vi har et lite problem for sonen IE053.
 Her mangler vi gdp data for årene 2015, 2016 og 2017.
 Dette vil gi oss problemer senere hvis vi ikke fikser det.
@@ -206,6 +225,7 @@ pop_tab <- toc_txt |>
 
 i\.
 Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+
 ```{r}
 pop_tab |>
   filter(
@@ -218,7 +238,6 @@ pop_tab |>
 
 pop_tab
 ```
-
 
 ii. Last ned Data Structure Definition (DSD) for denne tabellen.
 
