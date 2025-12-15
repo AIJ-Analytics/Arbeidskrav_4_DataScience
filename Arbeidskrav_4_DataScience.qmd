@@ -339,8 +339,12 @@ dim(eu_data)
 ```
 
 ```{r}
-c(
-  sum(is.na(eu_data$gdp_n3)),
-  sum(is.na(eu_data$pop_n3))
-)
+miss_eu <- eu_data %>% 
+  filter(!complete.cases(.))
+dim(miss_eu)
+```
+
+```{r}
+# don't run if you don't mean it.
+rm(list = setdiff(ls(), c("eu_data")))
 ```
