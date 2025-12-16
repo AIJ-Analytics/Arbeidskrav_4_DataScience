@@ -1303,7 +1303,6 @@ diff_gini_nuts2 \~ diff_gdp_per_capita.
 Putt resultatet av regresjonen i et objekt p_mod.
 
 ```{r}
-# Her skjærer det seg.Lag-funksjonen fungerer ikke, av en eller annen grunn. Har prøvd å debugge både vha. Claude og ChatGPT i timesvis, til ingen nytte. Dette lager følgefeil for resten av panelestimeringen.
 panel_n3 <- n3_data %>%
   left_join(n2_data, by = c("nc_name", "n2", "time")) %>%
   mutate(time = as.integer(time)) %>%
@@ -1323,8 +1322,9 @@ panel_n3 <- n3_data %>%
 
 p_mod <- plm(
   diff_gini_nuts2 ~ diff_gdp_per_capita,
-  data  = panel_n3,
-  index = c("n3", "time"),
+  data  = unnest(select(NUTS2_diff,
+ n2, NUTS2_diff), NUTS2_diff), 
+ index = c("n3", "time"),
   model = "pooling"
 )
 
@@ -1339,10 +1339,19 @@ Vis summary() for p_mod og tolk resultatet.
 summary(p_mod)
 ```
 
+Resultatet fra panel-regresjonen viser at det er en positiv sammenheng mellom endringer i BNP per innbygger og endringer i regional ulikhet (Gini-koeffisienten).
+Det betyr at når BNP per innbygger øker, så har også den regionale ulikheten en tendens til å øke noe.
+
+Sammenhengen er statistisk signifikant, altså lite sannsynlig for at den bare skyldes tilfeldigheter.
+Samtidig er effekten liten, og BNP-vekst alene forklarer bare en liten del av forskjellene i regional ulikhet.
+
+Resultatet må derfor tolkes forsiktig.
+Selv om økonomisk vekst ofte henger sammen med økte regionale forskjeller, finnes det også mange andre faktorer som påvirker/bidrar hvordan verdiskapningen fordeles mellom regioner.
+
 #### Oppgave 46
 
 En alternativ måte å finne summary() for p_mod er gjengitt i chunk-en nedenfor.
-**Forklar hva som blir gjort her og sammenlign med resultatet av en ordinær summary().**
+Forklar hva som blir gjort her og sammenlign med resultatet av en ordinær summary().
 
 ```{r}
 summary(
@@ -1350,3 +1359,10 @@ summary(
   vcov = function(x) plm::vcovHC(x, method = "white2")
 )
 ```
+
+Her ble det gjort enpanelanalyse med faste effekter, der vi kun ser på hvordan variablene utvikler seg innen hver region over tid.
+Dette betyr at alle konstante forskjeller mellom regionene fjernes, slik at analysen fokuserer på endringer fra år til år.
+Det som skjer er at det blir brukt robuste standardfeil for å sikre at resultatene er pålitelige selv om variansen i dataene ikke er helt jevn.
+Resultatet viser her at når BNP per innbygger øker, vil også den regionale ulikheten ha en vist tendesn til å øke litt.
+Sammenhengen er statistisk signifikant.
+Sammenlignet med en ordinær regresjon uten faste effekter gir denne modellen samme hovedkonklusjon, men her er det en strengere metode som kun bruker utviklingen innen regionene over tid.
