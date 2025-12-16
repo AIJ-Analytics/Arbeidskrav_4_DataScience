@@ -326,11 +326,6 @@ miss_eu <- eu_data %>%
 dim(miss_eu)
 ```
 
-```{r}
-# don't run if you don't mean it.
-rm(list = setdiff(ls(), c("eu_data")))
-```
-
 #### Oppgave 4
 
 Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for «Country») fra variabelen n3. Funksjonen str_sub() fra stringr pakken kan her være hendig å bruke.
