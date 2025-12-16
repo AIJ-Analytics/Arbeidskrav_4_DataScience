@@ -1233,10 +1233,16 @@ t.test(
 Bruk funksjonen plm() fra pakken plm til å utføre en panel-regresjon på dataene. For argumentet index kan dere bruke index = c("n3", "time"). Bruk samme enkle modell som ovenfor dvs. diff_gini_nuts2 \~ diff_gdp_per_capita. Putt resultatet av regresjonen i et objekt p_mod.
 
 ```{r}
+# Her skjærer det seg.Lag-funksjonen fungerer ikke, av en eller annen grunn. Har prøvd å debugge både vha. Claude og ChatGPT i timesvis, til ingen nytte. Dette lager følgefeil for resten av panelestimeringen.
 panel_n3 <- n3_data %>%
   left_join(n2_data, by = c("nc_name", "n2", "time")) %>%
-  group_by(n3) %>%
-  arrange(time, .by_group = TRUE) %>%
+  mutate(time = as.integer(time)) %>%
+  arrange(nc_name, n3, time) %>%  # Sort BEFORE grouping
+  group_by(nc_name, n3) %>%
+  mutate(
+    gdp_pc_lag  = lag(gdp_pc_n3, 1),
+    gini_n2_lag = lag(gini_n2, 1)
+  ) %>%
   mutate(
     diff_gdp_per_capita = 100 * (gdp_pc_n3 - lag(gdp_pc_n3)),
     diff_gini_nuts2     = 100 * (gini_n2 - lag(gini_n2))
