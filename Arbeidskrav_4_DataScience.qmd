@@ -23,7 +23,9 @@ library(sandwich)
 Sys.setlocale("LC_ALL", "Norwegian")
 ```
 
-Oppgaven handler om å hente regionale tall fra Eurostat direkte inn i R ved hjelp av et API. Daten brukes til å analysere økonomiske forskjeller mellom regioner i Europa. Arbeidskravet vil dermed ha:
+Oppgaven handler om å hente regionale tall fra Eurostat direkte inn i R ved hjelp av et API.
+Daten brukes til å analysere økonomiske forskjeller mellom regioner i Europa.
+Arbeidskravet vil dermed ha:
 
 -   Henter data på laveste regionale nivå (NUTS3)
 
@@ -53,9 +55,13 @@ toc_txt <- get_eurostat_toc(mode = "txt")
 
 ## GDP NUTS 3
 
-Her henter vi inholdsfortegnelsen fra Eurostat. Vi gjør dette ved å hente innholdsfortegnelsen i rent tekst format, der vi gir navnet toc_txt. Siden vi ikke vet helt om det brukes store eller småe bokstaver her, så bruker vi regex for å matche begge deler. Ved å bruke filter() velger vi tabeller som inneholder både "gdp" og "NUTS3", og med å bruke slect() ta vi kun med kollonene title og code.
+Her henter vi inholdsfortegnelsen fra Eurostat.
+Vi gjør dette ved å hente innholdsfortegnelsen i rent tekst format, der vi gir navnet toc_txt.
+Siden vi ikke vet helt om det brukes store eller småe bokstaver her, så bruker vi regex for å matche begge deler.
+Ved å bruke filter() velger vi tabeller som inneholder både "gdp" og "NUTS3", og med å bruke slect() ta vi kun med kollonene title og code.
 
-Tabellen vises med flextable(), som gjør at resultatene kan lett leses. For å sikre at begge ordene finnes i tittelen, bruker ci en AND-betingelse (&) mellom to str_detect() uttrykk.
+Tabellen vises med flextable(), som gjør at resultatene kan lett leses.
+For å sikre at begge ordene finnes i tittelen, bruker ci en AND-betingelse (&) mellom to str_detect() uttrykk.
 
 ```{r}
 gdp_tabs <- toc_txt |>
@@ -85,7 +91,10 @@ gdp_tabs |>
  width(2, width = 1.5)
 ```
 
-Her bruker tabellen med koden nama_10r_3gdp, som inneholder BNP (GDP) på NUTS3-nivå. For å se hvilken variabler og verder som finnes i datasettet, henter ci "Data Structure Definition" (DSD). Denne informasjonen brukes til å sette riktige filters i spørringen mot Eurostat. Det er spesielt viktig å bruke nuts_leve = "3" for å fikre at vi henter data på NUTS3-nivå, siden dette ikke er åpenbart dokumentert.
+Her bruker tabellen med koden nama_10r_3gdp, som inneholder BNP (GDP) på NUTS3-nivå.
+For å se hvilken variabler og verder som finnes i datasettet, henter ci "Data Structure Definition" (DSD).
+Denne informasjonen brukes til å sette riktige filters i spørringen mot Eurostat.
+Det er spesielt viktig å bruke nuts_leve = "3" for å fikre at vi henter data på NUTS3-nivå, siden dette ikke er åpenbart dokumentert.
 
 Vi Laster dermed ned «Data Structure Definition (DSD)» for tabellen med kode nama_10r_3gdp.
 
@@ -152,9 +161,13 @@ dim(gdp)
 gdp
 ```
 
-Her har vi konvertert gdp til euro fra milioner euro. Vi vil og gi navnet gdp. Vi velger og å benytte MI0_PPS_EU27_2020 som mål på BNP.
+Her har vi konvertert gdp til euro fra milioner euro.
+Vi vil og gi navnet gdp.
+Vi velger og å benytte MI0_PPS_EU27_2020 som mål på BNP.
 
-Vi har et lite problem for sonen IE053. Her mangler vi gdp data for årene 2015, 2016 og 2017. Dette vil gi oss problemer senere hvis vi ikke fikser det.
+Vi har et lite problem for sonen IE053.
+Her mangler vi gdp data for årene 2015, 2016 og 2017.
+Dette vil gi oss problemer senere hvis vi ikke fikser det.
 
 ```{r}
 gdp |>
@@ -163,7 +176,8 @@ gdp |>
  print
 ```
 
-Vi legger derfor disse til gdp som NA verdier. Disse vil vi så erstatte med interpolerte verdier senere.
+Vi legger derfor disse til gdp som NA verdier.
+Disse vil vi så erstatte med interpolerte verdier senere.
 
 ```{r}
 ie_data <- tibble(
@@ -195,7 +209,10 @@ gdp |>
 
 #### Oppgave 1
 
-1\. Søk i toc_txt for tabeller med population og NUTS 3. Pass på at dere dekker både population og Population og ulike skrivemåter for NUTS 3. Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+1\.
+Søk i toc_txt for tabeller med population og NUTS 3.
+Pass på at dere dekker både population og Population og ulike skrivemåter for NUTS 3.
+Vi vil bruke befolkningstabellen som har teksten: «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
 
 ```{r}
 pop_tab <- toc_txt |>
@@ -207,7 +224,8 @@ pop_tab <- toc_txt |>
 
 #### Oppgave 2
 
-i\. Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
+i\.
+Finn koden for tabellen med forklarende tekst «Average annual population to calculate regional GDP data (thousand persons) by NUTS 3 regions».
 
 ```{r}
 pop_tab |>
@@ -240,9 +258,13 @@ iii. Bruk opplysningene i DSD for å formulere en spørring mot Eurostat og last
 
 <!-- -->
 
-iv. Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner. Vi vil gjøre vår egen aggregering.
+iv. Bruk filter(str_length(geo) == 5) for å begrense datasettet til NUTS3 regioner.
+    Vi vil gjøre vår egen aggregering.
 
-v.  Hent data for samtlige land, dvs. vi trenger ikke sette noe filter for geo. Husk å konverter til tibble vha. as_tibble().
+v.  Hent data for samtlige land, dvs.
+    vi trenger ikke sette noe filter for geo.
+    Husk å konverter til tibble vha.
+    as_tibble().
 
 ```{r}
 #| eval: true
@@ -271,7 +293,9 @@ dim(pop)
 
 #### Oppgave 3
 
-Gjør en left_join() av de to tabellene. La gdp være venstre tabell (Viktig!). Gi resultatet navnet gdp_pop.
+Gjør en left_join() av de to tabellene.
+La gdp være venstre tabell (Viktig!).
+Gi resultatet navnet gdp_pop.
 
 ```{r}
 gdp_pop <- left_join(
@@ -328,7 +352,8 @@ dim(miss_eu)
 
 #### Oppgave 4
 
-Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for «Country») fra variabelen n3. Funksjonen str_sub() fra stringr pakken kan her være hendig å bruke.
+Endre navnet på variabelen geo til n3 og lag variablene n2 (NUTS2), n1 (NUTS1) og nc (for «Country») fra variabelen n3.
+Funksjonen str_sub() fra stringr pakken kan her være hendig å bruke.
 
 ```{r}
 eu_data <- eu_data |>
@@ -344,7 +369,8 @@ eu_data <- eu_data |>
 
 #### Oppgave 5
 
-Undersøk om vi har noen NUTS 3 soner med pop_n3 lik 0. Hvis det er noen så endre disse til NA.
+Undersøk om vi har noen NUTS 3 soner med pop_n3 lik 0.
+Hvis det er noen så endre disse til NA.
 
 ```{r}
 # Sjekker om det finnes soner uten befolkning. Så synes ikke, og livet går videre. 
@@ -365,17 +391,21 @@ eu_data |>
 
 #### Oppgave 7
 
-Sjekk summary gdp_pc_n3. Hva er største og minste verdi? Har vi noen NA?
+Sjekk summary gdp_pc_n3.
+Hva er største og minste verdi?
+Har vi noen NA?
 
 ```{r}
   summary(eu_data$gdp_pc_n3)
 ```
 
-Minsteverdi er 2 214, mens høyeste er 180 416. Ingen NA.
+Minsteverdi er 2 214, mens høyeste er 180 416.
+Ingen NA.
 
 #### Oppgave 8
 
-Bruker case_when() for å legge til variabelen nc_name før vi går videre. Østerrike for AT, Belgia for BE etc..
+Bruker case_when() for å legge til variabelen nc_name før vi går videre.
+Østerrike for AT, Belgia for BE etc..
 
 ```{r}
 eu_data <- eu_data |>
@@ -419,7 +449,11 @@ eu_data <- eu_data |>
 
 #### Oppgave 9
 
-Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå. Finn også antall NUTS3 regioner som finnes i hver NUTS2 region. Gi denne variabelen navnet num_reg_n2. Vi beregner også populasjon og gdp på NUTS2 nivå. Resultatet legger dere i en tibble kalt gini_n2.
+Bruk koden nedenfor til å beregne Gini-koeffisienter på NUTS2 nivå.
+Finn også antall NUTS3 regioner som finnes i hver NUTS2 region.
+Gi denne variabelen navnet num_reg_n2.
+Vi beregner også populasjon og gdp på NUTS2 nivå.
+Resultatet legger dere i en tibble kalt gini_n2.
 
 ```{r}
 gini_n2 <- eu_data |>
@@ -445,20 +479,28 @@ summary(gini_n2)
 
 #### Oppgave 10
 
-Sjekk obs. med Gini mindre enn 0.001. Er det noe som kjennetegner disse regionene?
+Sjekk obs.
+med Gini mindre enn 0.001.
+Er det noe som kjennetegner disse regionene?
 
-For å løse denne gikk vi inn i R-objektet og filtrerte etter utregnet Gini. Når vi filtrerte etter Gini mellom 0 og 0,001 fikk vi 4 observasjoner:
+For å løse denne gikk vi inn i R-objektet og filtrerte etter utregnet Gini.
+Når vi filtrerte etter Gini mellom 0 og 0,001 fikk vi 4 observasjoner:
 
 ```{r}
 gini_n2 %>%
   filter(gini_n2 < 0.001)
 ```
 
-De er spredt geografisk, i tid og har forskjellig GDP. Det de derimot har til felles, er at alle inneholder 2 NUTS3-regioner. At de har få regioner å regne ulikhet fra påvirker resultatet.
+De er spredt geografisk, i tid og har forskjellig GDP.
+Det de derimot har til felles, er at alle inneholder 2 NUTS3-regioner.
+At de har få regioner å regne ulikhet fra påvirker resultatet.
 
 #### Oppgave 11
 
-Beregn Gini-koeffisienter på NUTS1 nivå (ut fra gdp_pc_n3og pop_n3). Legg resultatet i gini_n1. Et alternativ her ville vært å beregnet Gini fra gdp_pc_n2 og pop_n2 i NUTS1 regionene. Vi får imidlertid større spredning og trolig også et bedre mål på likhet/ulikhet ved å beregne Gini utfra gdp_pc_n3og pop_n3.
+Beregn Gini-koeffisienter på NUTS1 nivå (ut fra gdp_pc_n3og pop_n3).
+Legg resultatet i gini_n1.
+Et alternativ her ville vært å beregnet Gini fra gdp_pc_n2 og pop_n2 i NUTS1 regionene.
+Vi får imidlertid større spredning og trolig også et bedre mål på likhet/ulikhet ved å beregne Gini utfra gdp_pc_n3og pop_n3.
 
 ```{r}
 #Trur denne er rett?
@@ -485,11 +527,14 @@ gini_n1 |>
  print(width = 76)
 ```
 
-Ser lik ut som "fasit". Great success! High five.
+Ser lik ut som "fasit".
+Great success!
+High five.
 
 #### Oppgave 12
 
-Beregn Gini-koeffisienter (ut fra variasjon i verdiskapning på NUTS3 nivå) på nasjonsnivå. Legg resultatet i gini_nc.
+Beregn Gini-koeffisienter (ut fra variasjon i verdiskapning på NUTS3 nivå) på nasjonsnivå.
+Legg resultatet i gini_nc.
 
 ```{r}
 gini_nc <- eu_data |>
@@ -525,7 +570,9 @@ gini_n3_nest <- eu_data |>
 
 #### Oppgave 14
 
-Nest dataene på NUTS2 nivå. Legg resultatet gini_NUTS2_nest. Bruk .key = "NUTS2_data".
+Nest dataene på NUTS2 nivå.
+Legg resultatet gini_NUTS2_nest.
+Bruk .key = "NUTS2_data".
 
 ```{r}
 gini_n2_nest <- gini_n2 |>
@@ -535,7 +582,8 @@ gini_n2_nest <- gini_n2 |>
 
 #### Oppgave 15
 
-«Nest» dataene på NUTS1 nivå. Legg resultatet gini_NUTS1_nest.
+«Nest» dataene på NUTS1 nivå.
+Legg resultatet gini_NUTS1_nest.
 
 ```{r}
 gini_n1_nest <- gini_n1 |>
@@ -546,7 +594,8 @@ gini_n1_nest <- gini_n1 |>
 
 #### Oppgave 16
 
-«Nest» dataene på nasjonsnivå. Legg resultatet i gini_NUTSc_nest.
+«Nest» dataene på nasjonsnivå.
+Legg resultatet i gini_NUTSc_nest.
 
 ```{r}
 gini_NUTSc_nest <- gini_nc |>
@@ -568,7 +617,8 @@ gini_NUTSeu_nest <- eu_data |>
 
 #### Oppgave 18
 
-Vis utviklingen i Gini-koeffisienten for NUTS3 regioner i EU vha. et linjeplot.
+Vis utviklingen i Gini-koeffisienten for NUTS3 regioner i EU vha.
+et linjeplot.
 
 ```{r}
 gini_NUTSeu_nest |>
@@ -582,9 +632,11 @@ gini_NUTSeu_nest |>
 
 #### Oppgave 19
 
-«The EU’s Structural Funds and Cohesion Fund direct funding to NUTS level 2 regions based on their GDP (PPS) per capita in comparison to the EU average: less developed regions (less than 75%), transition regions (between 75% and 90% and more developed regions (over 90%). For the period 2014–20, EUR 351 billion will be invested in the EU’s regions with most being directed to the less developed regions.» Basert på plottet fra foregående oppgave diskuter (veldig!) kort om tiltaket ser ut til å virke.
+«The EU’s Structural Funds and Cohesion Fund direct funding to NUTS level 2 regions based on their GDP (PPS) per capita in comparison to the EU average: less developed regions (less than 75%), transition regions (between 75% and 90% and more developed regions (over 90%).
+For the period 2014–20, EUR 351 billion will be invested in the EU’s regions with most being directed to the less developed regions.» Basert på plottet fra foregående oppgave diskuter (veldig!) kort om tiltaket ser ut til å virke.
 
-Basert på plottet over ser det ut som den regionale ulikheten i GDP synker, i tråd med målsetningen til EU. Trenden er vedvarende over tid, men det er vanskelig å si at overføringene har hatt en kausal effekt.
+Basert på plottet over ser det ut som den regionale ulikheten i GDP synker, i tråd med målsetningen til EU.
+Trenden er vedvarende over tid, men det er vanskelig å si at overføringene har hatt en kausal effekt.
 
 #### Oppgave 20
 
@@ -640,7 +692,9 @@ gini_2022 |>
 
 #### Oppgave 23
 
-Del landene i to grupper, dem som har lavere Gini i 2022 enn første året (dvs. utgjevning over tid mellom regionene) og dem som har høyere Gini i 2022 enn første året (dvs. større forskjeller mellom regionene). Vis utviklingen i de to gruppene vha. linjeplot.
+Del landene i to grupper, dem som har lavere Gini i 2022 enn første året (dvs. utgjevning over tid mellom regionene) og dem som har høyere Gini i 2022 enn første året (dvs. større forskjeller mellom regionene).
+Vis utviklingen i de to gruppene vha.
+linjeplot.
 
 ```{r}
 gini_compare <- gini_nc |>
@@ -714,7 +768,8 @@ gini_nc_grouped |>
 
 #### Oppgave 24
 
-Vis vha. et linjeplot utviklingen i gini-koeffisient for NUTS2 regionene i Irland.
+Vis vha.
+et linjeplot utviklingen i gini-koeffisient for NUTS2 regionene i Irland.
 
 ```{r}
 gini_n2 |>
@@ -813,15 +868,20 @@ utjevning_es_n1 <- gini_n1 |>
 utjevning_es_n1
 ```
 
-NUTS1-regionene som har hatt økt utjevning kjennetegnes ved at forskjellene i verdiskapning mellom deres underliggende NUTS3-regioner har blitt mindre over tid. Dette indikerer en mer balansert økonomisk utvikling innen regionene, der veksten i større grad har kommet flere delregioner til gode, og ikke bare vært i fokus i et spesifikt område.
+NUTS1-regionene som har hatt økt utjevning kjennetegnes ved at forskjellene i verdiskapning mellom deres underliggende NUTS3-regioner har blitt mindre over tid.
+Dette indikerer en mer balansert økonomisk utvikling innen regionene, der veksten i større grad har kommet flere delregioner til gode, og ikke bare vært i fokus i et spesifikt område.
 
 ## Tyskland
 
-Tyskland hadde i år 2020 en Gini-koeffisient lik 0,20 som skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene. Tyskland ligger likevel relativt høyt blandt landene vi har i vårt utvalg. Dette skulle indikere større spredning mellom regionene i Tyskland.
+Tyskland hadde i år 2020 en Gini-koeffisient lik 0,20 som skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene.
+Tyskland ligger likevel relativt høyt blandt landene vi har i vårt utvalg.
+Dette skulle indikere større spredning mellom regionene i Tyskland.
 
 #### Oppgave 27
 
-Lag et line-plot som viser utviklingen i Gini-koeffisient for NUTS2 regionene i Tyskland. Dropp gjerne farger. Det er så mange regioner at de er vanskelig å skille.
+Lag et line-plot som viser utviklingen i Gini-koeffisient for NUTS2 regionene i Tyskland.
+Dropp gjerne farger.
+Det er så mange regioner at de er vanskelig å skille.
 
 ```{r}
 gini_n2 |>
@@ -842,7 +902,11 @@ gini_n2 |>
   ggtitle("Utviklingen i Gini-koeffisienten for NUTS2-regionene i Tyskland")
 ```
 
-Figuren viser at Gini-koeffisientene for NUTS2-regionene i Tyskland er fra rundt 0,03 til over 0,45. Dette indikerer store forskjeller i intern regional ulikhet. Regioner med lav Gini fremstår som ensartede når det gjelder verdiskapning mellom NUTS3-områder, mens regioner med høy Gini er preget av betydelige interne forskjeller. De største regionale ulikhetene finnes i hovedsak i og rundt de store økonomiske sentrene og storbyregionene. Dette et hvertfall i de vestlige og sørlige delene av landet, der de sterke kjerneområder eksisterer med mindre utviklede regioner.
+Figuren viser at Gini-koeffisientene for NUTS2-regionene i Tyskland er fra rundt 0,03 til over 0,45.
+Dette indikerer store forskjeller i intern regional ulikhet.
+Regioner med lav Gini fremstår som ensartede når det gjelder verdiskapning mellom NUTS3-områder, mens regioner med høy Gini er preget av betydelige interne forskjeller.
+De største regionale ulikhetene finnes i hovedsak i og rundt de store økonomiske sentrene og storbyregionene.
+Dette et hvertfall i de vestlige og sørlige delene av landet, der de sterke kjerneområder eksisterer med mindre utviklede regioner.
 
 #### Oppgave 28
 
@@ -886,11 +950,13 @@ eu_data_nested |>
 
 ## Frankrike
 
-Frankrike hadde i år 2022 en Gini-koeffisient lik 0,206 som også skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene. Frankrike ligger imidlertid høyt blant landene vi har i vårt utvalg.
+Frankrike hadde i år 2022 en Gini-koeffisient lik 0,206 som også skulle tilsi en nokså jevn fordeling av økonomisk aktivitet mellom regionene.
+Frankrike ligger imidlertid høyt blant landene vi har i vårt utvalg.
 
 #### Oppgave 29
 
-Vis utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plot. Plottet vil se slik ut.
+Vis utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plot.
+Plottet vil se slik ut.
 
 ```{r}
 gini_n1 |>
@@ -918,7 +984,8 @@ gini_n1 |>
 
 #### Oppgave 30
 
-Lag en tabell som viser de 6 NUTS1 sonene i Frankrike som hadde høyest Gini-koeffisient i 2022. Hvilken sone har suverent høyest Gini-koeffisient og hvor ligger denne i landet?
+Lag en tabell som viser de 6 NUTS1 sonene i Frankrike som hadde høyest Gini-koeffisient i 2022.
+Hvilken sone har suverent høyest Gini-koeffisient og hvor ligger denne i landet?
 
 ```{r}
 gini_n1 |>
@@ -934,11 +1001,16 @@ gini_n1 |>
   autofit()
 ```
 
-NUTS1-sonen i Frankrike som har høyest Gini-koeffisient i 2022 er FR1. Denne regionen ligger rundt Paris, og skiller seg ut med større interne regionale forskjeller enn resten av landet. Den høye Gini-koeffisienten reflekterer store forskjeller i verdiskapning mellom NUTS3-regionene i og rundt hovedstadsområdet, sammenlignet med mer homogene regioner ellers i Frankrike.
+NUTS1-sonen i Frankrike som har høyest Gini-koeffisient i 2022 er FR1.
+Denne regionen ligger rundt Paris, og skiller seg ut med større interne regionale forskjeller enn resten av landet.
+Den høye Gini-koeffisienten reflekterer store forskjeller i verdiskapning mellom NUTS3-regionene i og rundt hovedstadsområdet, sammenlignet med mer homogene regioner ellers i Frankrike.
 
 #### Oppgave 31
 
-Vi ser at for Frankrike er det en region som har klart større forskjeller mht. vekst (verdiskapning) enn de andre. Sjekk NUTS3 regionenen i denne regionen nærmere vha. linjeplot og lag en tabell som viser gdp_pc_n3 for de seks sonene.
+Vi ser at for Frankrike er det en region som har klart større forskjeller mht.
+vekst (verdiskapning) enn de andre.
+Sjekk NUTS3 regionenen i denne regionen nærmere vha.
+linjeplot og lag en tabell som viser gdp_pc_n3 for de seks sonene.
 
 ```{r}
 # Finn NUTS1-regionen i Frankrike med høyest Gini i 2022
@@ -984,13 +1056,20 @@ eu_data |>
   autofit()
 ```
 
-Resultatene viser at den høye Gini-koeffisienten i FR1 i stor grad skyldes svært store forskjeller mellom NUTS3-regionene i området rundt Paris. To regioner har et ekstremt høyt BNP per innbygger, mens de øvrige regionene ligger på et langt lavere nivå. Dette betyr at en stor del av verdiskapningen er konsentrert i noen få områder, mens resten av regionen har en mer moderat utvikling. Den sterke konsentrasjonen rundt hovedstadsområdet forklarer hvorfor FR1 skiller seg tydelig ut med høy regional ulikhet sammenlignet med andre deler av Frankrike.
+Resultatene viser at den høye Gini-koeffisienten i FR1 i stor grad skyldes svært store forskjeller mellom NUTS3-regionene i området rundt Paris.
+To regioner har et ekstremt høyt BNP per innbygger, mens de øvrige regionene ligger på et langt lavere nivå.
+Dette betyr at en stor del av verdiskapningen er konsentrert i noen få områder, mens resten av regionen har en mer moderat utvikling.
+Den sterke konsentrasjonen rundt hovedstadsområdet forklarer hvorfor FR1 skiller seg tydelig ut med høy regional ulikhet sammenlignet med andre deler av Frankrike.
 
 #### Oppgave 32
 
 Kan vi utfra foregåenede plot og tabell si noe om årsaken til at FR1 har så høy Ginikoeffisient?
 
-Kort svar, Ja. Ut fra plottet og tabellen våras kan vi si noe om årsaken til den høye Gini-koeffisienten i FR1. Verdiskapningen er svært ulikt fordelt mellom NUTS3-regionene i området. Noen få regioner rundt Paris har ekstremt høyt BNP per innbygger, mens resten ligger betydelig lavere. Denne sterke konsentrasjonen av økonomisk aktivitet i enkelte områder gjør at forskjellene innad i regionen blir store, og forklarer hvorfor FR1 har så høy Gini-koeffisient.
+Kort svar, Ja.
+Ut fra plottet og tabellen våras kan vi si noe om årsaken til den høye Gini-koeffisienten i FR1.
+Verdiskapningen er svært ulikt fordelt mellom NUTS3-regionene i området.
+Noen få regioner rundt Paris har ekstremt høyt BNP per innbygger, mens resten ligger betydelig lavere.
+Denne sterke konsentrasjonen av økonomisk aktivitet i enkelte områder gjør at forskjellene innad i regionen blir store, og forklarer hvorfor FR1 har så høy Gini-koeffisient.
 
 # Enkle modeller
 
@@ -1035,11 +1114,14 @@ unnest(NUTS2_diff, NUTS2_diff) |>
  nrow()
 ```
 
-av disse har vi kunnet beregne Gini-koeffisient for. Vi har altså 38 NUTS2 soner som bare inneholder én NUTS3 sone.
+av disse har vi kunnet beregne Gini-koeffisient for.
+Vi har altså 38 NUTS2 soner som bare inneholder én NUTS3 sone.
 
 #### Oppgave 34
 
-Bruk modellen diff_gini_nuts2 \~ diff_gdp_per_capita på hver av de 256 (218) NUTS2 regionene vha. en anonym funksjon som «mappes» (vha. map()) på «list-column» NUTS2_diff. Legg resultatet i en variabel modell.
+Bruk modellen diff_gini_nuts2 \~ diff_gdp_per_capita på hver av de 256 (218) NUTS2 regionene vha.
+en anonym funksjon som «mappes» (vha. map()) på «list-column» NUTS2_diff.
+Legg resultatet i en variabel modell.
 
 ```{r}
 NUTS2_diff <- NUTS2_diff |>
@@ -1053,7 +1135,11 @@ NUTS2_diff <- NUTS2_diff |>
 
 #### Oppgave 35
 
-Hent ut koeffisientene fra de 256 (218) modellene og legg resultatet i variabelen mod_coeff. Gjør dette ved å «mappe» funksjonen coeff() på list_column modell. (Hint: Husk at hvis vi ønsker en dataframe så må \_df varianten av mapbrukes. Nå er map_df() blitt «superseded» i Tidyverse, dvs. at den ikke lengre blir utviklet og brukerne er oppfordret til å bruke map() som returnerer en liste. Her betyr det av vi bytter ut map_df(.x =, .f =) med bind_rows(map(.x =, .f =)).
+Hent ut koeffisientene fra de 256 (218) modellene og legg resultatet i variabelen mod_coeff.
+Gjør dette ved å «mappe» funksjonen coeff() på list_column modell.
+(Hint: Husk at hvis vi ønsker en dataframe så må \_df varianten av mapbrukes. Nå er map_df() blitt «superseded» i Tidyverse, dvs.
+at den ikke lengre blir utviklet og brukerne er oppfordret til å bruke map() som returnerer en liste.
+Her betyr det av vi bytter ut map_df(.x =, .f =) med bind_rows(map(.x =, .f =)).
 
 ```{r}
 mod_coeff <- bind_rows(
@@ -1066,7 +1152,8 @@ mod_coeff <- bind_rows(
 
 #### Oppgave 36
 
-Brukk glance() funksjonen fra broom pakken og «map» denne på modell variabelen for å generere «model summary». Legg resultatet i en variabel mod_sum.
+Brukk glance() funksjonen fra broom pakken og «map» denne på modell variabelen for å generere «model summary».
+Legg resultatet i en variabel mod_sum.
 
 ```{r}
 NUTS2_diff <- NUTS2_diff |>
@@ -1162,11 +1249,15 @@ coef_tidy |>
   )
 ```
 
-Av de totale 218 regioner var 162 modeller statistisk signifikante på 5 % nivå. Det betyr at for rundt 3 av 4 regioner er sammenhengen mellom endringer i BNP per innbygger og endringer i regional ulikhet ikke tilfeldig, men målbar i dataene.
+Av de totale 218 regioner var 162 modeller statistisk signifikante på 5 % nivå.
+Det betyr at for rundt 3 av 4 regioner er sammenhengen mellom endringer i BNP per innbygger og endringer i regional ulikhet ikke tilfeldig, men målbar i dataene.
 
 #### Oppgave 40
 
-Bruk ggplot til å lage et «density plot» av variabelen diff_gdp_per_capita. Legg inn en vertikal linje for gjennomsnitt diff_gdp_per_capita. (Hint! Husk argumentet na.rm = TRUE.). Resultatet skal bli som i plottet under.
+Bruk ggplot til å lage et «density plot» av variabelen diff_gdp_per_capita.
+Legg inn en vertikal linje for gjennomsnitt diff_gdp_per_capita.
+(Hint! Husk argumentet na.rm = TRUE.).
+Resultatet skal bli som i plottet under.
 
 ```{r}
 coef_tidy |>
@@ -1211,7 +1302,8 @@ coef_tidy |>
 
 #### Oppgave 43
 
-Utfør en enkel t-test for å teste om diff_gdp_per_capita er signifikant større enn 0. Er diff_gdp_per_capita signifikant større enn 0?
+Utfør en enkel t-test for å teste om diff_gdp_per_capita er signifikant større enn 0.
+Er diff_gdp_per_capita signifikant større enn 0?
 
 ```{r}
 t.test(
@@ -1225,7 +1317,11 @@ t.test(
 
 #### Oppgave 44
 
-Bruk funksjonen plm() fra pakken plm til å utføre en panel-regresjon på dataene. For argumentet index kan dere bruke index = c("n3", "time"). Bruk samme enkle modell som ovenfor dvs. diff_gini_nuts2 \~ diff_gdp_per_capita. Putt resultatet av regresjonen i et objekt p_mod.
+Bruk funksjonen plm() fra pakken plm til å utføre en panel-regresjon på dataene.
+For argumentet index kan dere bruke index = c("n3", "time").
+Bruk samme enkle modell som ovenfor dvs.
+diff_gini_nuts2 \~ diff_gdp_per_capita.
+Putt resultatet av regresjonen i et objekt p_mod.
 
 ```{r}
 # Her skjærer det seg.Lag-funksjonen fungerer ikke, av en eller annen grunn. Har prøvd å debugge både vha. Claude og ChatGPT i timesvis, til ingen nytte. Dette lager følgefeil for resten av panelestimeringen.
@@ -1266,7 +1362,8 @@ summary(p_mod)
 
 #### Oppgave 46
 
-En alternativ måte å finne summary() for p_mod er gjengitt i chunk-en nedenfor. **Forklar hva som blir gjort her og sammenlign med resultatet av en ordinær summary().**
+En alternativ måte å finne summary() for p_mod er gjengitt i chunk-en nedenfor.
+**Forklar hva som blir gjort her og sammenlign med resultatet av en ordinær summary().**
 
 ```{r}
 summary(
