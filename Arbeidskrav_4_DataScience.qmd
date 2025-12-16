@@ -1275,6 +1275,4 @@ summary(
 )
 ```
 
-**Ikke ferdi 38**
 
-**ikke rett 45 og 46, kanskje 44 og litt usikker?**
