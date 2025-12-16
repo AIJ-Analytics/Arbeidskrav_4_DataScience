@@ -647,25 +647,37 @@ eu_data_nested <- gini_n3_nest |>
   left_join(gini_NUTSc_nest, by = c("nc", "nc_name"))
 ```
 
+```{r}
+# don't run if you don't mean it.
+rm(list = setdiff(ls(), c("eu_data", "eu_data_nested")))
+```
+
 ## Plots som viser utviklingen
 
+Oppgave 21
+
+Lag et linjeplot i ggplot som viser utviklingen i Gini-koeffisient på nasjonsnivå for de 29 landene vi har med.
+Husk argumentet group =.
+
 ```{r}
-gini_nc |>
-  ggplot(
-    mapping = aes(
-      x = as.numeric(time),
-      y = gini_nc,
-      group = nc,
-      colour = nc_name
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme(legend.position = "bottom") +
-  ggtitle("Utviklingen i Gini-koeffisienten på nasjonsnivå (29 land)") +
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  group_by(nc, nc_name, time) |>
+  summarise(
+    gini_nc = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(
+    x = as.numeric(time),
+    y = gini_nc,
+    group = nc,
+    colour = nc_name
+  )) +
+  geom_line() +
+  theme(legend.position = "none") +
   labs(
-    x = "time",
-    y = "gini_nc",
-    colour = NULL
+    x = "År",
+    y = "Gini-koeffisient (nasjonsnivå)"
   )
 ```
 
@@ -674,20 +686,27 @@ gini_nc |>
 Lag en sortert tabell for Gini i år 2022 som gjør det litt lettere å se hvilken linje som hører til hvilket land
 
 ```{r}
-gini_2022 <- gini_nc |>
-  filter(time == 2022) |>
-  arrange(desc(gini_nc)) |>
-  select(nc_name, gini_nc)
-
-# Skriv ut tabellen
-gini_2022 |>
-  flextable() |>
-  set_header_labels(
-    nc_name = "Land",
-    gini_nc = "Gini-koeffisient"
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  group_by(nc, nc_name, time) |>
+  summarise(
+    gini_nc = DescTools::Gini(
+      gdp_pc_n3,
+      weights = pop_n3,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
   ) |>
-  autofit()
-
+  ggplot(aes(
+    x = as.numeric(time),
+    y = gini_nc,
+    group = nc
+  )) +
+  geom_line() +
+  labs(
+    x = "År",
+    y = "Gini-koeffisient (nasjonsnivå)"
+  )
 ```
 
 #### Oppgave 23
@@ -697,73 +716,55 @@ Vis utviklingen i de to gruppene vha.
 linjeplot.
 
 ```{r}
-gini_compare <- gini_nc |>
+gini_nc_ts <- eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
+  group_by(nc, nc_name, Year) |>
+  summarise(
+    gini_nc = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+```{r}
+land_grupper <- gini_nc_ts |>
   group_by(nc, nc_name) |>
   summarise(
-    gini_first = gini_nc[time == min(time)],
-    gini_2022  = gini_nc[time == 2022],
+    first_year = min(Year, na.rm = TRUE),
+    gini_first = gini_nc[Year == first_year][1],
+    gini_2022  = gini_nc[Year == 2022][1],
     .groups = "drop"
   ) |>
   mutate(
-    gruppe = if_else(
-      gini_2022 < gini_first,
-      "Lavere Gini i 2022",
-      "Høyere Gini i 2022"
+    gruppe = case_when(
+      is.na(gini_first) | is.na(gini_2022) ~ NA_character_,
+      gini_2022 < gini_first ~ "Lavere",
+      gini_2022 > gini_first ~ "Høyere",
+      TRUE ~ "Lik"
     )
   )
 ```
 
 ```{r}
-gini_nc_grouped <- gini_nc |>
-  left_join(
-    gini_compare |> select(nc, gruppe),
-    by = "nc"
-  )
+gini_nc_ts2 <- gini_nc_ts |>
+  left_join(land_grupper |> select(nc, gruppe), by = "nc") |>
+  filter(!is.na(gruppe), gruppe != "Lik")
 ```
 
 ```{r}
-gini_nc_grouped |>
-  filter(gruppe == "Lavere Gini i 2022") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_nc,
-      group = nc,
-      colour = nc_name
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "right") +
-  labs(
-    x = "Year",
-    y = "gini_nc",
-    colour = "nc_name"
-  ) +
-  ggtitle("Land med lavere regional ulikhet i 2022 enn første år vi har data for")
-
+gini_nc_ts2 |>
+  filter(gruppe == "Lavere") |>
+  ggplot(aes(x = Year, y = gini_nc, group = nc, colour = nc_name)) +
+  geom_line() +
+  labs(x = "Year", y = "gini_nc", colour = "nc_name")
 ```
 
 ```{r}
-gini_nc_grouped |>
-  filter(gruppe == "Høyere Gini i 2022") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_nc,
-      group = nc,
-      colour = nc_name
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "right") +
-  labs(
-    x = "Year",
-    y = "gini_nc",
-    colour = "nc_name"
-  ) +
-  ggtitle("Land med høyere regional ulikhet i 2022 enn første år vi har data for")
+gini_nc_ts2 |>
+  filter(gruppe == "Høyere") |>
+  ggplot(aes(x = Year, y = gini_nc, group = nc, colour = nc_name)) +
+  geom_line() +
+  labs(x = "Year", y = "gini_nc", colour = "nc_name")
 ```
 
 #### Oppgave 24
@@ -772,24 +773,18 @@ Vis vha.
 et linjeplot utviklingen i gini-koeffisient for NUTS2 regionene i Irland.
 
 ```{r}
-gini_n2 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "IE") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n2,
-      group = n2,
-      colour = n2
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  labs(
-    x = "Year",
-    y = "gini_n2",
-    colour = "n2"
-  ) +
-  ggtitle("Utviklingen i gini-koeffisienten for NUTS2-regionene i Irland")
+  group_by(n2, Year) |>
+  summarise(
+    gini_n2 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = Year, y = gini_n2, group = n2, colour = n2)) +
+  geom_line() +
+  labs(x = "Year", y = "gini_n2", colour = "n2")
 ```
 
 ## Hvordan er verdiskapningen fordelt mellom regionene i ulike land?
@@ -800,29 +795,22 @@ Spania hadde i år 2022 en Gini-koeffisient lik 0,134 som skulle tilsi en nokså
 
 #### Oppgave 25
 
-#### Lag et line-plot som viser utviklingen i Gini-koeffisientene for NUTS2 regionene i Spania.
+Lag et line-plot som viser utviklingen i Gini-koeffisientene for NUTS2 regionene i Spania.
 
 ```{r}
-gini_n2 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "ES") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n2,
-      group = n2,
-      colour = n2
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "bottom") +
-  labs(
-    x = "Year",
-    y = "gini_n2",
-    colour = "n2"
-  ) +
-  ggtitle("Utviklingen i Gini-koeffisienten for NUTS2-regionene i Spania")
-
+  group_by(n2, Year) |>
+  summarise(
+    gini_n2 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = Year, y = gini_n2, group = n2, colour = n2)) +
+  geom_line() +
+  labs(x = "Year", y = "gini_n2", colour = "n2") +
+  theme(legend.position = "bottom")
 ```
 
 #### Oppgave 26
@@ -830,43 +818,22 @@ gini_n2 |>
 Lag et line-plot som viser utviklingen i Gini-koeffisientene for NUTS1 regionene i Spania.
 
 ```{r}
-gini_n1 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "ES") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n1,
-      group = n1,
-      colour = n1
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "bottom") +
-  labs(
-    x = "Year",
-    y = "gini_n1",
-    colour = "n1"
-  ) +
-  ggtitle("Utviklingen i Gini-koeffisienten for NUTS1-regionene i Spania")
+  group_by(n1, Year) |>
+  summarise(
+    gini_n1 = DescTools::Gini(gdp_pc_n3, weights = pop_n3, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = Year, y = gini_n1, group = n1, colour = n1)) +
+  geom_line() +
+  labs(x = "Year", y = "gini_n1", colour = "n1") +
+  theme(legend.position = "bottom")
 ```
 
 Er det noe som karakteriserer de NUTS1 regionene som har hatt økt utgjevning?
-
-```{r}
-utjevning_es_n1 <- gini_n1 |>
-  filter(nc == "ES") |>
-  group_by(n1) |>
-  summarise(
-    gini_first = gini_n1[time == min(time)],
-    gini_2022  = gini_n1[time == 2022],
-    endring = gini_2022 - gini_first,
-    .groups = "drop"
-  ) |>
-  arrange(endring)
-
-utjevning_es_n1
-```
 
 NUTS1-regionene som har hatt økt utjevning kjennetegnes ved at forskjellene i verdiskapning mellom deres underliggende NUTS3-regioner har blitt mindre over tid.
 Dette indikerer en mer balansert økonomisk utvikling innen regionene, der veksten i større grad har kommet flere delregioner til gode, og ikke bare vært i fokus i et spesifikt område.
@@ -884,22 +851,29 @@ Dropp gjerne farger.
 Det er så mange regioner at de er vanskelig å skille.
 
 ```{r}
-gini_n2 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "DE") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n2,
-      group = n2
-    )
-  ) +
-  geom_line(color = "black", linewidth = 0.6, alpha = 0.8) +
-  theme_minimal() +
+  group_by(n2, Year) |>
+  summarise(
+    gini_n2 = DescTools::Gini(
+      gdp_pc_n3,
+      weights = pop_n3,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(
+    x = Year,
+    y = gini_n2,
+    group = n2
+  )) +
+  geom_line(alpha = 0.6) +
   labs(
     x = "Year",
     y = "gini_n2"
-  ) +
-  ggtitle("Utviklingen i Gini-koeffisienten for NUTS2-regionene i Tyskland")
+  )
 ```
 
 Figuren viser at Gini-koeffisientene for NUTS2-regionene i Tyskland er fra rundt 0,03 til over 0,45.
@@ -913,27 +887,31 @@ Dette et hvertfall i de vestlige og sørlige delene av landet, der de sterke kje
 Er det samme er tilfelle når vi ser på de større regionene i Tyskland (NUTS1).
 
 ```{r}
-gini_n1 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "DE") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n1,
-      group = n1,
-      colour = n1
-    )
-  ) +
-  geom_line(linewidth = 0.9) +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom"
-  ) +
+  group_by(n1, Year) |>
+  summarise(
+    gini_n1 = DescTools::Gini(
+      gdp_pc_n3,
+      weights = pop_n3,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(
+    x = Year,
+    y = gini_n1,
+    group = n1,
+    colour = n1
+  )) +
+  geom_line(size = 1) +
   labs(
     x = "Year",
     y = "gini_n1",
     colour = "NUTS1"
-  ) +
-  ggtitle("Utviklingen i Gini-koeffisienten for NUTS1-regionene i Tyskland")
+  )
 ```
 
 ```{r}
@@ -959,27 +937,31 @@ Vis utviklingen i Gini-koeffisient for NUTS1 regionene i Frankrike i et line-plo
 Plottet vil se slik ut.
 
 ```{r}
-gini_n1 |>
+eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
   filter(nc == "FR") |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gini_n1,
-      group = n1,
-      colour = n1
-    )
-  ) +
-  geom_line(linewidth = 0.9) +
-  theme_minimal() +
-  theme(
-    legend.position = "bottom"
-  ) +
+  group_by(n1, Year) |>
+  summarise(
+    gini_n1 = DescTools::Gini(
+      gdp_pc_n3,
+      weights = pop_n3,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(
+    x = Year,
+    y = gini_n1,
+    group = n1,
+    colour = n1
+  )) +
+  geom_line(size = 1) +
   labs(
     x = "Year",
     y = "gini_n1",
     colour = "NUTS1"
-  ) +
-  ggtitle("Utviklingen i Gini-koeffisienten for NUTS1-regionene i Frankrike")
+  )
 ```
 
 #### Oppgave 30
@@ -988,17 +970,26 @@ Lag en tabell som viser de 6 NUTS1 sonene i Frankrike som hadde høyest Gini-koe
 Hvilken sone har suverent høyest Gini-koeffisient og hvor ligger denne i landet?
 
 ```{r}
-gini_n1 |>
-  filter(nc == "FR", time == 2022) |>
-  arrange(desc(gini_n1)) |>
-  slice_head(n = 6) |>
-  select(n1, gini_n1) |>
-  flextable() |>
-  set_header_labels(
-    n1 = "NUTS1-sone",
-    gini_n1 = "Gini-koeffisient (2022)"
+fr_nuts1_gini_2022 <- eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
+  filter(nc == "FR") |>
+  group_by(n1, Year) |>
+  summarise(
+    gini_n1 = DescTools::Gini(
+      gdp_pc_n3,
+      weights = pop_n3,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
   ) |>
-  autofit()
+  filter(Year == 2022) |>
+  arrange(desc(gini_n1)) |>
+  slice_head(n = 6)
+
+fr_nuts1_gini_2022 |>
+  mutate(gini_n1 = round(gini_n1, 3)) |>
+  as_flextable()
 ```
 
 NUTS1-sonen i Frankrike som har høyest Gini-koeffisient i 2022 er FR1.
@@ -1013,47 +1004,36 @@ Sjekk NUTS3 regionenen i denne regionen nærmere vha.
 linjeplot og lag en tabell som viser gdp_pc_n3 for de seks sonene.
 
 ```{r}
-# Finn NUTS1-regionen i Frankrike med høyest Gini i 2022
-top_fr_n1 <- gini_n1 |>
-  filter(nc == "FR", time == 2022) |>
-  arrange(desc(gini_n1)) |>
-  slice(1) |>
-  pull(n1)
+fr1_nuts3_ts <- eu_data_nested |>
+  unnest(NUTS3_data) |>
+  mutate(Year = as.integer(time)) |>
+  filter(nc == "FR", n1 == "FR1") |>
+  select(n3, Year, gdp_pc_n3)
 
-# Plot gdp per capita (NUTS3) over tid for NUTS3-sonene i denne NUTS1-regionen
-eu_data |>
-  filter(nc == "FR", n1 == top_fr_n1) |>
-  ggplot(
-    aes(
-      x = as.numeric(time),
-      y = gdp_pc_n3,
-      group = n3,
-      colour = n3
-    )
-  ) +
-  geom_line(lwd = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "bottom") +
+fr1_nuts3_ts |>
+  ggplot(aes(
+    x = Year,
+    y = gdp_pc_n3,
+    group = n3,
+    colour = n3
+  )) +
+  geom_line() +
   labs(
     x = "Year",
-    y = "gdp_pc_n3",
+    y = "GDP per capita (NUTS3)",
     colour = "NUTS3"
   ) +
-  ggtitle(paste0("GDP per capita (NUTS3) i ", top_fr_n1, " (Frankrike)"))
+  theme(legend.position = "bottom")
 ```
 
 ```{r}
-eu_data |>
-  filter(nc == "FR", n1 == top_fr_n1, time == 2022) |>
+fr1_nuts3_2022 <- fr1_nuts3_ts |>
+  filter(Year == 2022) |>
   arrange(desc(gdp_pc_n3)) |>
-  slice_head(n = 6) |>
-  select(n3, gdp_pc_n3) |>
-  flextable() |>
-  set_header_labels(
-    n3 = "NUTS3-sone",
-    gdp_pc_n3 = "GDP per capita (2022)"
-  ) |>
-  autofit()
+  mutate(gdp_pc_n3 = round(gdp_pc_n3, 0))
+
+fr1_nuts3_2022 |>
+  as_flextable()
 ```
 
 Resultatene viser at den høye Gini-koeffisienten i FR1 i stor grad skyldes svært store forskjeller mellom NUTS3-regionene i området rundt Paris.
@@ -1229,7 +1209,6 @@ NUTS2-regionen med høyest koeffisient: AL02 i Albania.
 Hvor mange av de 256 (218) koeffisientene er signifikante på 5% nivå?
 
 ```{r}
-# Hent ut koeffisient-estimat og p-verdi fra alle modellene
 coef_tidy <- NUTS2_diff2 |>
   select(nc_name, n2, modell) |>
   mutate(
@@ -1288,7 +1267,7 @@ coef_tidy |>
   )
 ```
 
-Svaret visar et flertall av NUTS2-regionene på om lag 61 %, som er sammenhengen mellom endringer i BNP per innbygger og endringer i regional ulikhet positiv.
+Svaret visar et flertall av NUTS2-regionene på ca 61 %, som er sammenhengen mellom endringer i BNP per innbygger og endringer i regional ulikhet positiv.
 
 #### Oppgave 42
 
