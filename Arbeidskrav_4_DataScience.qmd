@@ -1153,7 +1153,7 @@ NUTS2_diff <- NUTS2_diff |>
 Hvilken NUTS1 sone har høyest R² for vår modell og hvilken sone har lavest.
 
 ```{r}
-#Lag mod_sum og mod_coeff som list-columns (én per NUTS2-region)
+#Lag mod_sum og mod_coeff som list-columns (en per NUTS2-region)
 NUTS2_diff2 <- NUTS2_diff |>
   ungroup() |>
   mutate(
