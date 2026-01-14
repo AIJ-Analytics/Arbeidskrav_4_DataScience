@@ -1,6 +1,10 @@
 ---
 title: "Arbeidskrav_4_DataScience"
-format: html
+papersize: a4
+format: 
+  html: default
+  typst: default
+  pdf: default
 editor: visual
 ---
 
@@ -20,7 +24,7 @@ library(sandwich)
 ```
 
 ```{r}
-Sys.setlocale("LC_ALL", "Norwegian")
+if(Sys.info()["sysname"] == "Windows") Sys.setlocale("LC_ALL", "Norwegian")
 ```
 
 Oppgaven handler om å hente regionale tall fra Eurostat direkte inn i R ved hjelp av et API.
@@ -158,8 +162,17 @@ dim(gdp)
 ```
 
 ```{r}
+# ag: ikke skriv 30000 observasjoner ut til skjerm
+# jeg har lagt til head()
+gdp |> head(n = 10)
+```
+
+```{r}
+#| paged.print: false
+# ag: et alternativ er å bruke `#| paged.print: false`
 gdp
 ```
+
 
 Her har vi konvertert gdp til euro fra milioner euro.
 Vi vil og gi navnet gdp.
@@ -170,10 +183,10 @@ Her mangler vi gdp data for årene 2015, 2016 og 2017.
 Dette vil gi oss problemer senere hvis vi ikke fikser det.
 
 ```{r}
+#| paged.print: false
 gdp |>
  filter(geo == "IE053")
 
- print
 ```
 
 Vi legger derfor disse til gdp som NA verdier.
@@ -307,8 +320,14 @@ gdp_pop <- left_join(
 
 ```{r}
 dim(gdp_pop)
-head(gdp_pop)
 ```
+
+```{r}
+#| paged.print: false
+# ag: igjen paged.print: false gjør susen
+gdp_pop
+```
+
 
 Gjør følgende tilpasning av gdp_pop og legger resultatet i variabelen eu_data.
 
@@ -383,10 +402,56 @@ eu_data |>
 Sjekker hvor mange NUTS3 soner vi har i hvert land.
 
 ```{r}
+# ag: dere må sette max_row, ellers får dere bare med de 10 første
+# tabellen blir litt lang. Se under for forslag til kode som lager en mer
+# kompakt tabell
 eu_data |>
   distinct(nc, n3)|>
   count(nc, name ="antall_nuts3")|>
-  as_flextable()
+  as_flextable(
+    show_coltype = FALSE,
+    max_row = 30
+  ) |> 
+  line_spacing(space = 0.3)
+```
+
+```{r}
+#| message: false
+#| paged.print: false
+eu_data |>
+  distinct(nc, n3)|>
+  count(nc, name ="antall_nuts3") |>
+  add_row()  |> 
+  add_row()  |> 
+  add_row() %>%
+  {
+    list(
+      p1 = slice(., 1:8),
+      p2 = slice(., 9:16),
+      p3 = slice(., 17:24),
+      p4 = slice(., 25:32)
+    )
+  } |> 
+  bind_cols() |> 
+  flextable() |> 
+  set_table_properties(
+    opts_pdf = list(
+      arraystretch = 0.8
+      )
+    ) |> 
+  set_header_labels(
+    nc...1 = "Land\nkode",
+    antall_nuts3...2 = "Antall\nnuts3",
+    nc...3 = "Land\nkode",
+    antall_nuts3...4 = "Antall\nnuts3",
+    nc...5 = "Land\nkode",
+    antall_nuts3...6 = "Antall\nnuts3",
+    nc...7 = "Land\nkode",
+    antall_nuts3...8 = "Antall\nnuts3"
+  ) |> 
+  line_spacing(space = 0.5) |> 
+  align(align = "left", part = "all") |> 
+  autofit()
 ```
 
 #### Oppgave 7
@@ -445,6 +510,7 @@ eu_data <- eu_data |>
   )
 ```
 
+
 ## Beregning av Gini
 
 #### Oppgave 9
@@ -472,6 +538,15 @@ gini_n2 <- eu_data |>
 ```{r}
 head(gini_n2, 10)
 ```
+
+```{r}
+#| paged.print: false
+# ag: 10 første rekker gini_n2
+gini_n2
+# ag: legger en inn `options(paged.print = FALSE)` så får en
+# dete automatisk
+```
+
 
 ```{r}
 summary(gini_n2)
@@ -504,6 +579,7 @@ Vi får imidlertid større spredning og trolig også et bedre mål på likhet/ul
 
 ```{r}
 #Trur denne er rett?
+# ag: Ser bra ut. Stemmer med mine resultater ;-)
 gini_n1 <- eu_data |>
   group_by(n1, time, nc, nc_name) |>
   summarise(
@@ -660,7 +736,8 @@ gini_nc |>
     )
   ) +
   geom_line(lwd = 0.75) +
-  theme(legend.position = "bottom") +
+  # ag: her vil jeg foreslå legend til høure
+  #theme(legend.position = "bottom") +
   ggtitle("Utviklingen i Gini-koeffisienten på nasjonsnivå (29 land)") +
   labs(
     x = "time",
@@ -689,6 +766,39 @@ gini_2022 |>
   autofit()
 
 ```
+
+```{r}
+#| message: false
+# ag: mer kompakt variant
+gini_2022 |> 
+  mutate(gini_nc = round(gini_nc, 4)) %>%
+  {
+    list(
+      p1 = slice(., 1:14,),
+      p2 = slice(., 15:28,)
+    )
+  } |> 
+  bind_cols() |>
+  flextable() |> 
+  # ag: for pdf (latex)
+  set_table_properties(
+    opts_pdf = list(
+      arraystretch = 1.2
+    )
+  ) |> 
+  line_spacing(space = 0.7) |> 
+  set_header_labels(
+    nc_name...1 = "Land",
+    gini_nc...2 = "Gini\nkoeff.",
+    nc_name...3 = "Land",
+    gini_nc...4 = "Gini\nkoeff."
+  ) |> 
+  align(align = "left", part = "all") |> 
+  line_spacing(space = 0.3) |> 
+  autofit()
+```
+
+
 
 #### Oppgave 23
 
@@ -1324,19 +1434,25 @@ diff_gini_nuts2 \~ diff_gdp_per_capita.
 Putt resultatet av regresjonen i et objekt p_mod.
 
 ```{r}
-# Her skjærer det seg.Lag-funksjonen fungerer ikke, av en eller annen grunn. Har prøvd å debugge både vha. Claude og ChatGPT i timesvis, til ingen nytte. Dette lager følgefeil for resten av panelestimeringen.
+# Her skjærer det seg.Lag-funksjonen fungerer ikke, av en eller 
+# annen grunn. Har prøvd å debugge både vha. Claude og ChatGPT i 
+# timesvis, til ingen nytte. Dette lager følgefeil for resten 
+# av panelestimeringen.
 panel_n3 <- n3_data %>%
   left_join(n2_data, by = c("nc_name", "n2", "time")) %>%
   mutate(time = as.integer(time)) %>%
   arrange(nc_name, n3, time) %>%  # Sort BEFORE grouping
   group_by(nc_name, n3) %>%
   mutate(
-    gdp_pc_lag  = lag(gdp_pc_n3, 1),
-    gini_n2_lag = lag(gini_n2, 1)
+    gdp_pc_lag  = dplyr::lag(gdp_pc_n3, 1),
+    gini_n2_lag = dplyr::lag(gini_n2, 1)
   ) %>%
   mutate(
-    diff_gdp_per_capita = 100 * (gdp_pc_n3 - lag(gdp_pc_n3)),
-    diff_gini_nuts2     = 100 * (gini_n2 - lag(gini_n2))
+    # ag: ingenting kan slå ekte intelligens ;-)
+    # dere har havnet borti stats::lag() som virker
+    # anderledes (langt mindre intuitivt) enn dplyr::lag()
+    diff_gdp_per_capita = 100 * (gdp_pc_n3 - dplyr::lag(gdp_pc_n3)),
+    diff_gini_nuts2     = 100 * (gini_n2 - dplyr::lag(gini_n2))
   ) %>%
   ungroup() %>%
   filter(!is.na(diff_gdp_per_capita), !is.na(diff_gini_nuts2)) %>%
@@ -1351,6 +1467,22 @@ p_mod <- plm(
 
 summary(p_mod)
 ```
+
+Hvorfor så komplisert? Har dere ikke sett REMA reklamen «Det enkle er ofte det beste»?
+
+```{r}
+p_mod <- NUTS2_diff |> 
+  select(n2, nc_name, NUTS2_diff) |> 
+  unnest(NUTS2_diff)|> 
+  plm(
+    formula = 'diff_gini_nuts2 ~ diff_gdp_per_capita',
+    data = _,
+    index = c("n3", "time"),
+    model = "within"
+  )
+```
+
+
 
 #### Oppgave 45
 
@@ -1371,3 +1503,6 @@ summary(
   vcov = function(x) plm::vcovHC(x, method = "white2")
 )
 ```
+
+Vi har fått et robust SE estimat.
+

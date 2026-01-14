@@ -1,0 +1,13 @@
+---
+title: "ag comments"
+format: html
+---
+
+## Generelle kommentarer
+
+- Bra arbeid
+- Husk at `Sys.setlocale("LC_ALL", "Norwegian")`bare virker på Windows
+- Har lagt litt kode for å vise triks for å gjøre store tabeller litt mer kompakte. Dette er ikke så lett å få til å fungere for html, pdf (latex) og typst
+- Merk forskjellen mellom stats::lag() (som er tilgjegelig som default) og dplyr::lag() fra tidyverse. Den siste er mye enklere og mer intuitiv. Det var stats::lag() som vippet dere av pinnen for panal-modellene.
+
+
